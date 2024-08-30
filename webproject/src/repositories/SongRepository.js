@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../firebase";
 import { getArtistById } from "./ArtistRepository";
 
@@ -12,7 +12,7 @@ export const fetchSongs = async () => {
       const artistData = await getArtistById(song.artist);
       return {
         id: doc.id,
-        artistName: artistData ? artistData.name : 'Unknown Artist',
+        artistName: artistData ? artistData.name : "Unknown Artist",
         ...doc.data()
       };
     }));
@@ -20,6 +20,20 @@ export const fetchSongs = async () => {
     console.error("Error fetching songs: ", error);
   }
 }
+
+export const fetchSongById = async (songId) => {
+  const songDoc = await getDoc(doc(songsCollection, songId));
+  if (songDoc.exists()) {
+    const songData = songDoc.data();
+    const artist = await getArtistById(songData.artist);
+    return {
+      id: songId,
+      name: songData.name,
+      artistName: artist ? artist.name : "Unknown Artist",
+    };
+  }
+  return null;
+};
 
 export const addSong = async (song) => {
   try {
