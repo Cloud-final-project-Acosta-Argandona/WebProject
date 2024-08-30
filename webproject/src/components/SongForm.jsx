@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
 import { Button, Col, Form } from 'react-bootstrap';
@@ -9,6 +9,8 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
   const [artistId, setArtistId] = useState('');
   const [audioFile, setAudioFile] = useState(null);
   const [existingFileUrl, setExistingFileUrl] = useState('');
+
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
@@ -21,7 +23,7 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
     e.preventDefault();
     let downloadURL = existingFileUrl;
 
-    if (audioFile) {
+    if (!existingFileUrl) {
       const storageRef = ref(storage, `songs/${audioFile.name}`);
       const uploadTask = uploadBytesResumable(storageRef, audioFile);
 
@@ -60,7 +62,10 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
     setName('');
     setArtistId('');
     setAudioFile(null);
-    setExistingFileUrl('');
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   useEffect(() => {
@@ -115,7 +120,8 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
           type="file"
           accept="audio/*"
           onChange={handleFileChange}
-          required={!existingFileUrl}
+          ref={fileInputRef}
+          required={!songToEdit}
         />
         <Form.Control.Feedback>
           Please provide an audio file
