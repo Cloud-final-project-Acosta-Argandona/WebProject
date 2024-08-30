@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import AppBar from "../components/AppBar";
 import { fetchUsersWithFavoriteSongs } from '../repositories/UserRepository';
-import { ListGroup, Card, Col, Row } from 'react-bootstrap';
+import { ListGroup, Card, Col, Row, Tab, Tabs, Accordion } from 'react-bootstrap';
+import AppBar from '../components/AppBar';
 
 const Favorites = () => {
   const [usersWithFavorites, setUsersWithFavorites] = useState([]);
@@ -16,27 +16,38 @@ const Favorites = () => {
   }, []);
 
   return (
-      <>
-        <AppBar />
-        <Row className="mt-4">
-          {usersWithFavorites.map((user) => (
-            <Col md={6} key={user.email}>
-              <Card className="mb-4">
-                <Card.Header>{user.username} ({user.email})</Card.Header>
-                <Card.Body>
-                  <ListGroup variant="flush">
-                    {user.favoriteSongs.map((song) => (
-                      <ListGroup.Item key={song.id}>
-                        {song.name} - {song.artistName}
-                      </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                </Card.Body>
+    <>
+      <AppBar />
+      <h1>User's favorites</h1>
+      <Row className="mt-4">
+        <Col md={12}>
+          <Accordion>
+            {usersWithFavorites.map((user, index) => (
+              <Card key={user.email}>
+                <Accordion.Item eventKey={index.toString()}>
+                  <Accordion.Header>
+                    {user.username} ({user.email})
+                  </Accordion.Header>
+                  <Accordion.Body>
+                    {user.favoriteSongs.length > 0 ? (
+                      <ul>
+                        {user.favoriteSongs.map((song) => (
+                          <li key={song.id}>
+                            {song.name} - {song.artistName}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No favorites</p>
+                    )}
+                  </Accordion.Body>
+                </Accordion.Item>
               </Card>
-            </Col>
-          ))}
-        </Row>
-      </>
+            ))}
+          </Accordion>
+        </Col>
+      </Row>
+    </>
   );
 };
 
