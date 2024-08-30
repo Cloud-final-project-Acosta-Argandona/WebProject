@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../firebase";
 import { getArtistById } from "./ArtistRepository";
 
@@ -32,10 +32,24 @@ export const addSong = async (song) => {
 
 export const updateSong = async (songId, updatedSong) => {
   try {
-    const songRef = doc(firebaseDb, "artists", songId);
+    const songRef = doc(firebaseDb, "songs", songId);
     await updateDoc(songRef, updatedSong);
-    return { id: songRef.id, ...updatedSong };
+    const artistData = await getArtistById(updatedSong.artist);
+    return {
+      id: songRef.id,
+      artistName: artistData ? artistData.name : 'Unknown Artist',
+      ...updatedSong
+    };
   } catch (error) {
-    console.error("Error updating artist: ", error);
+    console.error("Error updating song: ", error);
+  }
+};
+
+export const deleteSong = async (songId) => {
+  try {
+    const songRef = doc(firebaseDb, "songs", songId);
+    await deleteDoc(songRef);
+  } catch (error) {
+    console.error("Error deleting song: ", error);
   }
 };

@@ -8,59 +8,71 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
   const [name, setName] = useState('');
   const [artistId, setArtistId] = useState('');
   const [audioFile, setAudioFile] = useState(null);
+  const [existingFileUrl, setExistingFileUrl] = useState('');
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
       setAudioFile(e.target.files[0]);
+      setExistingFileUrl('');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!audioFile) return;
+    let downloadURL = existingFileUrl;
 
-    const storageRef = ref(storage, `songs/${audioFile.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, audioFile);
+    if (audioFile) {
+      const storageRef = ref(storage, `songs/${audioFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, audioFile);
 
-    uploadTask.on('state_changed',
-      (snapshot) => {},
-      (error) => {
-        console.error('Upload failed:', error);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+      await new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          () => {},
+          (error) => {
+            console.error('Upload failed:', error);
+            reject(error);
+          },
+          async () => {
+            downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve();
+          }
+        );
+      });
+    }
 
-        const song = {
-          name,
-          artist: artistId,
-          storageUrl: downloadURL,
-        };
+    const song = {
+      name,
+      artist: artistId,
+      storageUrl: downloadURL,
+    };
 
-        let savedSong;
-        if (songToEdit) {
-          savedSong = await updateSong(songToEdit.id, song)
-          console.log("Edited song:", savedSong);
-        } else {
-          savedSong = await addSong(song);
-          console.log("Saved song:", savedSong);
-        }
+    let savedSong;
+    if (songToEdit) {
+      savedSong = await updateSong(songToEdit.id, song);
+      console.log("Edited song:", savedSong);
+    } else {
+      savedSong = await addSong(song);
+      console.log("Saved song:", savedSong);
+    }
 
-        onSave(savedSong);
-        setName('');
-        setArtistId('');
-        setAudioFile(null);
-      }
-    );
+    onSave(savedSong);
+    setName('');
+    setArtistId('');
+    setAudioFile(null);
+    setExistingFileUrl('');
   };
 
   useEffect(() => {
     if (songToEdit) {
       setName(songToEdit.name || "");
       setArtistId(songToEdit.artist || "");
+      setExistingFileUrl(songToEdit.storageUrl || "");
       setAudioFile(songToEdit.storageUrl || null);
     } else {
       setName("");
       setArtistId("");
+      setExistingFileUrl("");
       setAudioFile(null);
     }
   }, [songToEdit]);
@@ -103,14 +115,14 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
           type="file"
           accept="audio/*"
           onChange={handleFileChange}
-          required
+          required={!existingFileUrl}
         />
         <Form.Control.Feedback>
           Please provide an audio file
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Button type="submit">Add Song</Button>
+      <Button type="submit">{songToEdit ? 'Update Song' : 'Add Song'}</Button>
     </Form>
   );
 };

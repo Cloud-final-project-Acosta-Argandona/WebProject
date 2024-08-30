@@ -2,6 +2,7 @@ import React from 'react';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { Button } from 'react-bootstrap';
+import { deleteSong } from '../repositories/SongRepository';
 
 const SongsList = ({songs, onEdit, onDelete}) => {
   const handleDelete = async (songId) => {
@@ -22,7 +23,7 @@ const SongsList = ({songs, onEdit, onDelete}) => {
               controls
             />
             <Button onClick={() => {onEdit(song)}}>Edit</Button>
-            <Button onClick={() => {onDelete(song.id)}}>Delete</Button>
+            <Button onClick={() => {handleDelete(song.id)}}>Delete</Button>
           </li>
         ))}
       </ul>
