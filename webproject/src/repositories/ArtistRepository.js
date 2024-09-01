@@ -1,12 +1,15 @@
 import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc, getDoc } from 'firebase/firestore';
 import { firebaseDb } from '../firebase';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const artistsCollection = collection(firebaseDb, "artists");
+const analytics = getAnalytics();
 
 export const getArtistById = async (artistId) => {
   try {
     const artistRef = doc(firebaseDb, "artists", artistId);
     const artistDoc = await getDoc(artistRef);
+    logEvent(analytics, "artists_retrieved");
     return { id: artistDoc.id, ...artistDoc.data() };
   } catch (error) {
     console.error("Error deleting artist: ", error);

@@ -1,8 +1,10 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { firebaseDb } from "../firebase";
 import { getArtistById } from "./ArtistRepository";
+import { getAnalytics, logEvent } from "firebase/analytics";
 
 const songsCollection = collection(firebaseDb, "songs");
+const analytics = getAnalytics();
 
 export const fetchSongs = async () => {
   try {
@@ -10,6 +12,7 @@ export const fetchSongs = async () => {
     return await Promise.all(songSnapshot.docs.map(async (doc) => {
       const song = doc.data();
       const artistData = await getArtistById(song.artist);
+      logEvent(analytics, "songs_retrieved");
       return {
         id: doc.id,
         artistName: artistData ? artistData.name : "Unknown Artist",
@@ -38,6 +41,7 @@ export const fetchSongById = async (songId) => {
 export const addSong = async (song) => {
   try {
     const docRef = await addDoc(songsCollection, song);
+    logEvent(analytics, "song_uploaded", { song: docRef});
     return { id: docRef.id, ...song };
   } catch (error) {
     console.error("Error adding song: ", error);

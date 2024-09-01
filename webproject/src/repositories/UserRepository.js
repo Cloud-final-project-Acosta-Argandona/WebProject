@@ -1,14 +1,15 @@
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { getArtistById } from './ArtistRepository';
+import { collection, getDocs } from 'firebase/firestore';
 import { firebaseDb } from '../firebase';
 import { fetchSongById } from './SongRepository';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const usersCollection = collection(firebaseDb, "users");
-const songsCollection = collection(firebaseDb, "songs");
+const analytics = getAnalytics();
 
 export const fetchUsers = async () => {
   const userSnapshot = await getDocs(usersCollection);
   const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  logEvent(analytics, "favorites_retrieved");
   return users;
 };
 
