@@ -1,0 +1,48 @@
+.user-container {
+  padding-top: 3rem;
+}
+
+h1 {
+  padding-top: 2rem;
+  font-weight: bold;
+}
+
+.user-list {
+  width: 50%;
+  margin: auto;
+}
+
+.favorites-list {
+  list-style: none;
+  padding: 0;
+}
+
+.favorites-list li {
+  display: flex;
+  align-items: center;
+}
+
+.custom-accordion {
+  background-color: #504f4f !important;
+  color: white !important;
+  font-weight: 800;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #2b3035;
+  color: rgb(255, 165, 207);
+  border-color: #2b3035
+}
+
+.accordion-button:hover {
+  background-color: #2b3035;
+  color: rgb(255, 165, 207);
+}
+
+.accordion-item .accordion-collapse {
+  border-color: #2b3035;
+}
+
+.accordion-item .accordion-collapse.show {
+  border-color: #2b3035;
+}
