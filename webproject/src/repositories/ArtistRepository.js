@@ -1,8 +1,9 @@
-import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { firebaseDb } from '../firebase';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const artistsCollection = collection(firebaseDb, "artists");
+const songsCollection = collection(firebaseDb, "songs");
 const analytics = getAnalytics();
 
 export const getArtistById = async (artistId) => {
@@ -54,8 +55,24 @@ export const updateArtist = async (artistId, updatedArtist) => {
 
 export const deleteArtist = async (artistId) => {
   try {
+    const batch = writeBatch(firebaseDb);
     const artistRef = doc(firebaseDb, "artists", artistId);
-    await deleteDoc(artistRef);
+    const songSnapshot = await getDocs(songsCollection);
+
+    for (const songDoc of songSnapshot.docs) {
+      const songData = songDoc.data();
+      if (songData.artist) {
+        const artistData = await getArtistById(songData.artist);
+        if (songData.artist === artistId) {
+          console.log("artist is included", artistData);
+          const songRef = doc(firebaseDb, "songs", songDoc.id);
+          batch.update(songRef, { artist: "" });
+        }
+      }
+    }
+
+    batch.delete(artistRef);
+    await batch.commit();
   } catch (error) {
     console.error("Error deleting artist: ", error);
   }

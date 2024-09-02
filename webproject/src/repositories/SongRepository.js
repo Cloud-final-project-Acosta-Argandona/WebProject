@@ -1,9 +1,10 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc, writeBatch } from "firebase/firestore";
 import { firebaseDb } from "../firebase";
 import { getArtistById } from "./ArtistRepository";
 import { getAnalytics, logEvent } from "firebase/analytics";
 
 const songsCollection = collection(firebaseDb, "songs");
+const usersCollection = collection(firebaseDb, "users");
 const analytics = getAnalytics();
 
 export const fetchSongs = async () => {
@@ -65,7 +66,24 @@ export const updateSong = async (songId, updatedSong) => {
 
 export const deleteSong = async (songId) => {
   try {
+    const batch = writeBatch(firebaseDb);
     const songRef = doc(firebaseDb, "songs", songId);
+    const userSnapshot = await getDocs(usersCollection);
+
+    userSnapshot.forEach((userDoc) => {
+      const userData = userDoc.data();
+      if (userData.idSongs && Array.isArray(userData.idSongs)) {
+        if (userData.idSongs.includes(songId)) {
+          console.log("userdata includes", userData.idSongs);
+          const updatedSongs = userData.idSongs.filter(id => id !== songId);
+          const userRef = doc(firebaseDb, "users", userDoc.id);
+          batch.update(userRef, { idSongs: updatedSongs });
+        }
+      }
+    });
+
+    batch.delete(songRef);
+    await batch.commit();
     await deleteDoc(songRef);
   } catch (error) {
     console.error("Error deleting song: ", error);
