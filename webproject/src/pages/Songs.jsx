@@ -45,7 +45,7 @@ const Songs = () => {
   return(
     <>
       <AppBar />
-      <Container>
+      <Container className="main">
         <Row>
           <Col>
             <h1>Songs</h1>
