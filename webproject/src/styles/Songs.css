@@ -1,0 +1,36 @@
+.songs-container {
+  padding-top: 3rem;
+}
+
+h1 {
+  padding-top: 2rem;
+  font-weight: bold;
+}
+
+.songs-list {
+  width: 65%;
+  margin: auto;
+}
+
+.button-row {
+  height: 4.5rem !important;
+}
+
+.add-button {
+  font-weight: bolder !important;
+  color: rgb(255, 165, 207) !important;
+  margin: 2rem 1.5rem;
+}
+
+.song-modal {
+  background-color: #2b3035;
+  color: rgb(255, 165, 207) !important;
+  border-radius: 0.3rem;
+}
+
+.song-modal button {
+  margin-top: 1rem;
+  background-color: rgb(255, 165, 207) !important;
+  border: none;
+  color: #2b3035;
+}

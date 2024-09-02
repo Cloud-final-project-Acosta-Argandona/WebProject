@@ -4,7 +4,7 @@ import { storage } from '../firebase';
 import { Button, Col, Form } from 'react-bootstrap';
 import { addSong, updateSong } from '../repositories/SongRepository';
 
-const SongForm = ({ artists, songToEdit, onSave }) => {
+const SongForm = ({ artists, songToEdit, onSave, setIsLoading }) => {
   const [name, setName] = useState('');
   const [artistId, setArtistId] = useState('');
   const [audioFile, setAudioFile] = useState(null);
@@ -23,7 +23,8 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
     e.preventDefault();
     let downloadURL = existingFileUrl;
 
-    if (!existingFileUrl) {
+    if (!existingFileUrl && audioFile) {
+      setIsLoading(true);
       const storageRef = ref(storage, `songs/${audioFile.name}`);
       const uploadTask = uploadBytesResumable(storageRef, audioFile);
 
@@ -33,6 +34,7 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
           () => {},
           (error) => {
             console.error('Upload failed:', error);
+            setIsLoading(false);
             reject(error);
           },
           async () => {
@@ -49,25 +51,32 @@ const SongForm = ({ artists, songToEdit, onSave }) => {
       storageUrl: downloadURL,
     };
 
-    let savedSong;
-    if (songToEdit) {
-      savedSong = await updateSong(songToEdit.id, song);
-      console.log("Edited song:", savedSong);
-    } else {
-      savedSong = await addSong(song);
-      console.log("Saved song:", savedSong);
+    try {
+      let savedSong;
+      if (songToEdit) {
+        savedSong = await updateSong(songToEdit.id, song);
+        console.log("Edited song:", savedSong);
+      } else {
+        savedSong = await addSong(song);
+        console.log("Saved song:", savedSong);
+      }
+      
+      onSave(savedSong);
+    } catch (error) {
+      console.error('Error updating song:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    onSave(savedSong);
+  
     setName('');
     setArtistId('');
     setAudioFile(null);
-
+  
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
-
+  
   useEffect(() => {
     if (songToEdit) {
       setName(songToEdit.name || "");

@@ -3,7 +3,7 @@ import AppBar from "../components/AppBar";
 import ArtistList from "../components/ArtistList";
 import { useEffect, useState } from "react";
 import ArtistForm from "../components/ArtistForm";
-import { fetchArtists, updateArtist, addArtist } from "../repositories/ArtistRepository";
+import { fetchArtists } from "../repositories/ArtistRepository";
 import "../styles/Artists.css";
 
 const Artists = () => {
@@ -31,15 +31,14 @@ const Artists = () => {
   };
 
   const handleSave = async (newArtist) => {
+    if (isLoading) return;
     setIsLoading(true);
 
     try {
       if (artistToEdit) {
-        await updateArtist(newArtist);
         setArtists(artists.map(artist => artist.id === artistToEdit.id ? newArtist : artist));
       } else {
-        const savedArtist = await addArtist(newArtist);
-        setArtists(prevArtists => [...prevArtists, savedArtist]);
+        setArtists(prevArtists => [...prevArtists, newArtist]);
       }
 
       setIsLoading(false);
